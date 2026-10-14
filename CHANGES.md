@@ -30,3 +30,6 @@ Unchanged: `scanner.py`, `render.yaml`, `requirements.txt`, `.gitignore`.
 ## Known pre-existing issue (not fixed here)
 - index.html links `hark.css` and `hark-hero.css`, which return 404 JSON in production (and locally); CSS vars like `--gutter`, `--tap` they define are therefore undefined on the live site. Present since before v0.5.
 - index.html: removed dead hark.css/hark-hero.css links; defined --gutter/--tap in :root.
+
+## v0.6 (2026-10-14)
+- Desktop layout: page container capped at 1120px and centered, wider gutters on desktop, section spacing, base resets (box-sizing, margins, font), defined missing --r-pill/--dur-quick/--ease-out. Restores what the removed hark.css used to provide.
