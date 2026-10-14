@@ -22,8 +22,24 @@ SECRET_PATTERNS = [
      "A live Stripe secret key can charge cards and read payments."),
     ("Stripe test secret key", r"sk_test_[0-9a-zA-Z]{20,}", "high",
      "A Stripe test secret key is exposed; rotate it."),
-    ("OpenAI API key", r"sk-(?:proj-)?[A-Za-z0-9_-]{20,}", "critical",
+    ("OpenRouter API key", r"sk-or-v1-[a-f0-9]{64}", "critical",
+     "An OpenRouter key lets anyone spend your credits on any model it routes to."),
+    ("DeepSeek API key", r"(?<![A-Za-z0-9_-])sk-[a-f0-9]{32}(?![A-Za-z0-9_-])", "critical",
+     "A DeepSeek-format key (sk- plus 32 hex) lets anyone spend your API credits."),
+    ("OpenAI API key", r"sk-(?!ant-|or-|[a-f0-9]{32}(?![A-Za-z0-9_-]))(?:proj-|svcacct-|admin-)?[A-Za-z0-9_-]{20,}", "critical",
      "An OpenAI key lets anyone spend your API credits."),
+    ("xAI API key", r"xai-[A-Za-z0-9]{70,}", "critical",
+     "An xAI (Grok) key lets anyone spend your API credits."),
+    ("Groq API key", r"gsk_[A-Za-z0-9]{48,}", "critical",
+     "A Groq key lets anyone spend your API credits."),
+    ("Perplexity API key", r"pplx-[A-Za-z0-9]{40,}", "critical",
+     "A Perplexity key lets anyone run paid searches on your account."),
+    ("Hugging Face token", r"hf_[A-Za-z0-9]{34,}", "high",
+     "A Hugging Face token can use paid inference and may write to your repos."),
+    ("Firecrawl API key", r"fc-[a-f0-9]{32}", "high",
+     "A Firecrawl key lets anyone burn your crawl credits."),
+    ("Database connection string", r"(?:postgres(?:ql)?|mongodb(?:\+srv)?)://[^\s:@/\"'`]+:[^\s@/\"'`]+@[^\s\"'`]+", "critical",
+     "A database URL with a password gives full read/write access to your data."),
     ("Anthropic API key", r"sk-ant-[A-Za-z0-9_-]{20,}", "critical",
      "An Anthropic key lets anyone spend your API credits."),
     ("AWS access key id", r"AKIA[0-9A-Z]{16}", "critical",
@@ -212,7 +228,7 @@ def estimate_exposure(findings):
     reasons = []
     for f in findings:
         t = f["title"]
-        if f["type"] == "secret" and any(k in t for k in ("OpenAI", "Anthropic")):
+        if f["type"] == "secret" and any(k in t for k in ("OpenAI", "Anthropic", "OpenRouter", "DeepSeek", "xAI", "Groq")):
             lo += 120; hi += 900; reasons.append(t)
         elif f["type"] == "wallet" and f["severity"] == "high":
             lo += 60; hi += 450; reasons.append(t)
