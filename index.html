@@ -3,8 +3,20 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ShipCheck: security scanner for vibe-coded AI apps</title>
-    <meta name="description" content="Paste your Lovable, Bolt, Replit, or Cursor app's URL. In 60 seconds, see leaked keys, open databases, and how much of your AI bill is exposed. Free." />
+    <title>ShipCheck: Free Security Scanner for Lovable, Bolt &amp; AI Apps</title>
+    <meta name="description" content="Free 60-second security check for Lovable, Bolt, Replit and v0 apps. Finds leaked OpenAI and Stripe keys, Supabase tables without RLS, and exposed .env files." />
+    <link rel="canonical" href="https://shipcheck-esfy.onrender.com/" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="ShipCheck" />
+    <meta property="og:title" content="ShipCheck: free security scanner for Lovable, Bolt &amp; AI-built apps" />
+    <meta property="og:description" content="Free 60-second security check for Lovable, Bolt, Replit and v0 apps. Finds leaked OpenAI and Stripe keys, Supabase tables without RLS, and exposed .env files." />
+    <meta property="og:url" content="https://shipcheck-esfy.onrender.com/" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="ShipCheck: free security scanner for Lovable, Bolt &amp; AI-built apps" />
+    <meta name="twitter:description" content="Free 60-second security check for Lovable, Bolt, Replit and v0 apps. Finds leaked OpenAI and Stripe keys, Supabase tables without RLS, and exposed .env files." />
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "ShipCheck", "url": "https://shipcheck-esfy.onrender.com/", "applicationCategory": "SecurityApplication", "operatingSystem": "Web", "description": "Free passive security scanner for vibe-coded and AI-built apps (Lovable, Bolt, Replit, Cursor, v0). Finds leaked API keys, Supabase tables without Row Level Security, sensitive files, missing security headers and AI endpoints that can run up a bill.", "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}</script>
+    <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I check my Lovable app for security issues?", "acceptedAnswer": {"@type": "Answer", "text": "Paste your app's public URL (a .lovable.app address or your custom domain) into ShipCheck. In about a minute it reads the same HTML and JavaScript any visitor's browser downloads and reports leaked API keys, Supabase tables readable without Row Level Security, exposed files like .env, missing security headers, and AI endpoints anyone can call."}}, {"@type": "Question", "name": "Can ShipCheck find a leaked OpenAI API key?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. It searches your live site's JavaScript for OpenAI, Anthropic, OpenRouter, DeepSeek, xAI, Groq, Perplexity, Hugging Face and Firecrawl keys, plus Stripe, AWS, GitHub, Supabase service_role and sb_secret keys and database connection strings. If one turns up, revoke it at the provider first, then move the call to a server-side function."}}, {"@type": "Question", "name": "How does the Supabase RLS checker work?", "acceptedAnswer": {"@type": "Answer", "text": "ShipCheck pulls your Supabase project URL and public anon key from your bundle, then sends count-only requests to common tables such as users, profiles and orders. If a count comes back, that table is readable by anyone. No row data is downloaded. Because it only tests common table names, confirm every table in the Supabase dashboard too."}}, {"@type": "Question", "name": "Is the scan safe to run on my site?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. The free scan is passive: it only reads what any visitor can already see and never logs in, submits forms or downloads your users' data. Active tests run only on sites whose owners have verified them. We don't store your code; we keep your report so you can compare re-scans."}}, {"@type": "Question", "name": "What is Wallet Guard?", "acceptedAnswer": {"@type": "Answer", "text": "Wallet Guard looks for AI endpoints and keys a stranger could use to run paid model requests on your account, then estimates the hourly cost of scripted abuse so you can see what is at stake."}}, {"@type": "Question", "name": "Which builders do you support?", "acceptedAnswer": {"@type": "Answer", "text": "Lovable, Bolt, Replit, v0, Cursor, Base44, and any public web app."}}]}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -15,11 +27,9 @@
       rel="stylesheet"
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap"
     />
-    <link rel="stylesheet" href="hark.css" />
-    <link rel="stylesheet" href="hark-hero.css" />
     <style>
       /* ShipCheck brand: dark only, one lime accent. */
-      :root {
+      :root { --gutter: 20px; --tap: 44px;
         color-scheme: dark;
         --x-bg: #0b0d10;
         --x-bg-2: #12151a;
@@ -234,6 +244,9 @@
       .x-cta h2 { font-size: clamp(26px, 5vw, 40px); letter-spacing: -0.035em; line-height: 1.1; font-weight: 700; }
       .x-foot { margin-top: 32px; }
       .x-foot__brand { display: grid; gap: 4px; }
+      .x-foot__links { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; }
+      .x-foot__links a { color: var(--x-muted); text-decoration: none; }
+      .x-foot__links a:hover { color: var(--x-lime); }
       [hidden] { display: none !important; }
     </style>
   </head>
@@ -432,16 +445,28 @@
           </div>
           <div class="x-faq">
             <details>
-              <summary>Is the scan safe?</summary>
-              <p>Yes. The free scan only reads what any visitor's browser downloads. Live tests run only on sites you prove you own.</p>
+              <summary>How do I check my Lovable app for security issues?</summary>
+              <p>Paste your app&#x27;s public URL (a .lovable.app address or your custom domain) into ShipCheck. In about a minute it reads the same HTML and JavaScript any visitor&#x27;s browser downloads and reports leaked API keys, Supabase tables readable without Row Level Security, exposed files like .env, missing security headers, and AI endpoints anyone can call.</p>
+            </details>
+            <details>
+              <summary>Can ShipCheck find a leaked OpenAI API key?</summary>
+              <p>Yes. It searches your live site&#x27;s JavaScript for OpenAI, Anthropic, OpenRouter, DeepSeek, xAI, Groq, Perplexity, Hugging Face and Firecrawl keys, plus Stripe, AWS, GitHub, Supabase service_role and sb_secret keys and database connection strings. If one turns up, revoke it at the provider first, then move the call to a server-side function.</p>
+            </details>
+            <details>
+              <summary>How does the Supabase RLS checker work?</summary>
+              <p>ShipCheck pulls your Supabase project URL and public anon key from your bundle, then sends count-only requests to common tables such as users, profiles and orders. If a count comes back, that table is readable by anyone. No row data is downloaded. Because it only tests common table names, confirm every table in the Supabase dashboard too.</p>
+            </details>
+            <details>
+              <summary>Is the scan safe to run on my site?</summary>
+              <p>Yes. The free scan is passive: it only reads what any visitor can already see and never logs in, submits forms or downloads your users&#x27; data. Active tests run only on sites whose owners have verified them. We don&#x27;t store your code; we keep your report so you can compare re-scans.</p>
+            </details>
+            <details>
+              <summary>What is Wallet Guard?</summary>
+              <p>Wallet Guard looks for AI endpoints and keys a stranger could use to run paid model requests on your account, then estimates the hourly cost of scripted abuse so you can see what is at stake.</p>
             </details>
             <details>
               <summary>Which builders do you support?</summary>
               <p>Lovable, Bolt, Replit, v0, Cursor, Base44, and any public web app.</p>
-            </details>
-            <details>
-              <summary>Do you store my code?</summary>
-              <p>No. We keep your report so you can compare re-scans, nothing else.</p>
             </details>
           </div>
         </section>
@@ -457,6 +482,12 @@
           <p><strong>ShipCheck</strong> — ship fast, don't leak.</p>
           <p>© 2026 ShipCheck</p>
         </div>
+        <nav class="x-foot__links" aria-label="Free checks">
+          <a href="/lovable-security-check">Lovable security check</a>
+          <a href="/supabase-rls-checker">Supabase RLS checker</a>
+          <a href="/leaked-api-key-checker">Leaked API key checker</a>
+          <a href="/bolt-replit-security-check">Bolt &amp; Replit security check</a>
+        </nav>
         <nav aria-label="Back to sections" data-auto></nav>
       </footer>
     </div>

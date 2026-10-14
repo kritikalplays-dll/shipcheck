@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""ShipCheck API: POST /api/scan {url} -> report JSON; POST /api/lead {email,url} -> saved.
+"""ShipCheck API: GET / + SEO pages (robots.txt, sitemap.xml, 4 landing pages via seo.py);
+POST /api/scan {url} -> report JSON; POST /api/lead {email,url} -> saved.
 Stdlib only (no Flask needed) so it runs on any box with python3 + requests.
 Run:  python3 api.py  (PORT env, default 8080). Serves index.html at /.
 """
@@ -7,6 +8,7 @@ import json, os, re, time, ipaddress, socket, threading
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse
 import scanner
+import seo
 import urllib.request
 
 # --- Integrations (all optional; each turns on only when its env var is set in Render) ---
@@ -82,23 +84,48 @@ def safe_target(url):
         return None
     return url
 
+SEC_HEADERS = (("Strict-Transport-Security", "max-age=31536000"), ("X-Frame-Options", "DENY"),
+               ("X-Content-Type-Options", "nosniff"), ("Referrer-Policy", "strict-origin-when-cross-origin"))
+
 class H(SimpleHTTPRequestHandler):
-    def do_GET(self):
-        # Serve only the landing page and a health check; never the source files.
-        if self.path in ("/", "/index.html") or self.path.startswith("/?"):
+    def _send(self, code, body, ctype, cache=None, head=False):
+        if isinstance(body, str): body = body.encode()
+        self.send_response(code)
+        self.send_header("Content-Type", ctype)
+        for k, v in SEC_HEADERS: self.send_header(k, v)
+        if cache: self.send_header("Cache-Control", cache)
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        if not head: self.wfile.write(body)
+
+    def _route(self, head=False):
+        # Serve only the landing page, SEO pages and a health check; never the source files.
+        path = self.path.split("?", 1)[0].split("#", 1)[0]
+        if path in ("/", "/index.html"):
             body = open(INDEX, "rb").read()
+            extra = seo.verification_tags()
+            if extra:
+                body = body.replace(b"</title>", b"</title>\n    " + extra.encode(), 1)
             if POSTHOG_KEY:
                 body = body.replace(b"</head>", (POSTHOG_SNIPPET % (POSTHOG_KEY, POSTHOG_HOST)).encode() + b"</head>", 1)
-            self.send_response(200)
-            self.send_header("Content-Type", "text/html; charset=utf-8")
-            for k, v in (("Strict-Transport-Security", "max-age=31536000"), ("X-Frame-Options", "DENY"),
-                         ("X-Content-Type-Options", "nosniff"), ("Referrer-Policy", "strict-origin-when-cross-origin")):
-                self.send_header(k, v)
-            self.send_header("Content-Length", str(len(body)))
-            self.end_headers(); self.wfile.write(body); return
-        if self.path == "/healthz":
+            return self._send(200, body, "text/html; charset=utf-8", head=head)
+        if path == "/robots.txt":
+            return self._send(200, seo.robots(), "text/plain; charset=utf-8", "public, max-age=3600", head)
+        if path == "/sitemap.xml":
+            return self._send(200, seo.sitemap(), "application/xml; charset=utf-8", "public, max-age=3600", head)
+        page = seo.render(path.rstrip("/") or "/")
+        if page:
+            return self._send(200, page, "text/html; charset=utf-8", "public, max-age=3600", head)
+        if path == "/healthz":
             return self._json(200, {"ok": True})
         return self._json(404, {"error": "not found"})
+
+    def do_GET(self):
+        return self._route()
+
+    def do_HEAD(self):
+        # Override the base class so HEAD never maps to files on disk.
+        return self._route(head=True)
 
     def _json(self, code, obj):
         body = json.dumps(obj).encode()
@@ -106,7 +133,8 @@ class H(SimpleHTTPRequestHandler):
         self.send_header("Content-Type", "application/json")
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Content-Length", str(len(body)))
-        self.end_headers(); self.wfile.write(body)
+        self.end_headers()
+        if self.command != "HEAD": self.wfile.write(body)
 
     def do_OPTIONS(self):
         self.send_response(204)
